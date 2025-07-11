@@ -11,7 +11,6 @@
     "dist",
     "README.md"
   ],
-  "type": "module",
   "scripts": {
     "start": "node src/socket-server.js",
     "socket": "bun run src/socket.ts",
