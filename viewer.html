@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Viewer - 실시간 연동 테스트</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <style>
+    body { font-family: sans-serif; background: #f6f8fa; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; }
+    .box { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px #eee; padding: 2rem; margin-top: 3rem; width: 350px; }
+    .log { height: 180px; overflow-y: auto; border: 1px solid #bcdcff; border-radius: 8px; padding: 0.7rem; margin-bottom: 1rem; background: #f9fcff; font-size: 0.98rem; }
+    input, button { padding: 0.6rem; font-size: 1rem; border-radius: 8px; border: 1.5px solid #bcdcff; }
+    button { background: #2d8cff; color: #fff; border: none; margin-left: 0.5rem; cursor: pointer; }
+    button:hover { background: #1769aa; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>뷰어 (Viewer)</h2>
+    <div><b>채널코드:</b> <span id="channel"></span></div>
+    <div class="log" id="log"></div>
+    <form id="msgForm">
+      <input type="text" id="msgInput" placeholder="메시지 입력" autocomplete="off" />
+      <button type="submit">전송</button>
+    </form>
+  </div>
+  <script>
+    // 채널코드 파싱
+    function getChannel() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('channel') || '';
+    }
+    const channel = getChannel();
+    document.getElementById('channel').textContent = channel;
+
+    // 소켓 연결
+    const socket = io('http://localhost:4000');
+    socket.on('connect', () => {
+      socket.emit('join-room', channel);
+      logMsg('서버에 연결됨.');
+    });
+
+    // 메시지 수신
+    socket.on('receive-message', (msg) => {
+      logMsg('상대: ' + msg);
+    });
+
+    // 유저 입장/퇴장 알림(선택)
+    socket.on('user-joined', (id) => logMsg('상대가 입장했습니다.'));
+    socket.on('user-left', (id) => logMsg('상대가 퇴장했습니다.'));
+
+    // 메시지 전송
+    document.getElementById('msgForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const val = document.getElementById('msgInput').value.trim();
+      if (val) {
+        socket.emit('send-message', { channelCode: channel, data: val });
+        logMsg('나: ' + val);
+        document.getElementById('msgInput').value = '';
+      }
+    });
+
+    function logMsg(msg) {
+      const log = document.getElementById('log');
+      log.innerHTML += msg + '<br>';
+      log.scrollTop = log.scrollHeight;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>채널코드로 입장 | Talk to Figma MCP</title>
+  <style>
+    body {
+      background: #f6f8fa;
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .zoom-box {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      padding: 2.5rem 2rem 2rem 2rem;
+      width: 350px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .logo {
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: #2d8cff;
+      margin-bottom: 0.5rem;
+      letter-spacing: -1px;
+    }
+    .desc {
+      color: #555;
+      font-size: 1.05rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    .input-group {
+      width: 100%;
+      margin-bottom: 1.2rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      font-size: 1.1rem;
+      border: 1.5px solid #bcdcff;
+      border-radius: 8px;
+      margin-bottom: 0.7rem;
+      outline: none;
+      transition: border 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    input[type="text"]:focus {
+      border: 1.5px solid #2d8cff;
+    }
+    select {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1.5px solid #bcdcff;
+      margin-bottom: 1.2rem;
+      background: #f6f8fa;
+    }
+    button {
+      padding: 0.9rem 0;
+      font-size: 1.1rem;
+      background: #2d8cff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #1769aa;
+    }
+    .copy-btn, .gen-btn {
+      width: 48px;
+      margin-bottom: 0.7rem;
+      font-size: 0.95rem;
+      padding: 0.8rem 0;
+      background: #e6f0fa;
+      color: #2d8cff;
+      border: 1.5px solid #bcdcff;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .copy-btn:hover, .gen-btn:hover {
+      background: #d0e7fa;
+    }
+  </style>
+</head>
+<body>
+  <div class="zoom-box">
+    <div class="logo">채널 테스트</div>
+    <div class="desc">6자리 영문+숫자 방코드를 생성하거나 입력해<br>실시간 속기방에 입장하세요.</div>
+    <form id="channelForm" autocomplete="off">
+      <div class="input-group">
+        <input type="text" id="channelCode" placeholder="방코드 (예: CH31I1)" maxlength="6" minlength="6" pattern="[A-Z0-9]{6}" required autofocus />
+        <button type="button" class="gen-btn" id="genBtn" title="랜덤코드 생성">생성</button>
+        <button type="button" class="copy-btn" id="copyBtn" title="복사">복사</button>
+      </div>
+      <div class="input-group" style="flex-direction: column; gap: 0;">
+        <select id="pageType">
+          <option value="viewer.html">뷰어(Viewer)</option>
+          <option value="steno.html">속기사(Steno)</option>
+        </select>
+      </div>
+      <button type="submit" style="width:100%;">입장하기</button>
+    </form>
+  </div>
+  <script>
+    // 6자리 영문+숫자 랜덤코드 생성
+    function makeCode() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let code = '';
+      for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    }
+    // 코드 생성 버튼
+    document.getElementById('genBtn').onclick = function() {
+      const code = makeCode();
+      document.getElementById('channelCode').value = code;
+    };
+    // 코드 복사 버튼
+    document.getElementById('copyBtn').onclick = function() {
+      const code = document.getElementById('channelCode').value.trim();
+      if (code.length === 6) {
+        navigator.clipboard.writeText(code);
+        this.textContent = '복사됨';
+        setTimeout(() => { this.textContent = '복사'; }, 1200);
+      }
+    };
+    // 입력값 6자리 영문+숫자만 허용
+    document.getElementById('channelCode').addEventListener('input', function(e) {
+      this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0,6);
+    });
+    // 폼 제출
+    document.getElementById('channelForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const code = document.getElementById('channelCode').value.trim();
+      const page = document.getElementById('pageType').value;
+      if (/^[A-Z0-9]{6}$/.test(code)) {
+        window.location.href = `${page}?channel=${encodeURIComponent(code)}`;
+      } else {
+        alert('6자리 영문+숫자 코드만 입력 가능합니다.');
+      }
+    });
+  </script>
+</body>
+</html> 
